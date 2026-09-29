@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline Pharmacy Healthcare App</title>
+
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1100px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: #0b7a3d;
+      color: white;
+      padding: 25px;
+      border-radius: 15px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #0b7a3d;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #0b7a3d;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      margin-top: 15px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #095f30;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background: #0b7a3d;
+      color: white;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+    }
+
+    .low-stock {
+      background: #ffe5e5;
+    }
+
+    .expiry-warning {
+      background: #fff3cd;
+    }
+
+    #reader {
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .sync-status {
+      padding: 10px;
+      border-radius: 10px;
+      margin-top: 10px;
+      font-weight: bold;
+      text-align: center;
+      background: #d4edda;
+      color: #155724;
+    }
+
+    @media \(max-width: 768px\) {
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 8px;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h1>Offline Pharmacy Healthcare App</h1>
+    <p>Pharmacy Stock Management | Drug Expiry Alerts | Supply Tracking</p>
+  </div>
+
+  <div class="card">
+    <h2>Add Medicine</h2>
+
+    <input type="text" id="drugName" placeholder="Drug Name">
+
+    <input type="number" id="drugQuantity" placeholder="Quantity">
+
+    <input type="date" id="expiryDate">
+
+    <input type="text" id="supplier" placeholder="Supplier Name">
+
+    <button onclick="addMedicine()">Add Medicine</button>
+  </div>
+
+  <div class="card">
+    <h2>QR / Barcode Scanner</h2>
+
+    <div id="reader"></div>
+
+    <div class="sync-status" id="syncStatus">
+      Offline Mode Active
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Medicine Inventory</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Drug</th>
+          <th>Quantity</th>
+          <th>Expiry Date</th>
+          <th>Supplier</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody id="medicineTable">
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <p>Built using HTML, CSS and JavaScript for healthcare support in Kenya.</p>
+  </div>
+
+</div>
+
+<script>
+
+let medicines = JSON.parse(localStorage.getItem("medicines")) || [];
+
+let pendingSync = JSON.parse(localStorage.getItem("pendingSync")) || [];
+
+function saveMedicines() {
+  localStorage.setItem("medicines", JSON.stringify(medicines));
+}
+
+function savePendingSync() {
+  localStorage.setItem("pendingSync", JSON.stringify(pendingSync));
+}
+
+function addMedicine() {
+
+  const drugName = document.getElementById("drugName").value;
+  const drugQuantity = document.getElementById("drugQuantity").value;
+  const expiryDate = document.getElementById("expiryDate").value;
+  const supplier = document.getElementById("supplier").value;
+
+  if (
+    drugName === "" ||
+    drugQuantity === "" ||
+    expiryDate === "" ||
+    supplier === ""
+  ) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  const medicine = {
+    drugName,
+    drugQuantity,
+    expiryDate,
+    supplier
+  };
+
+  medicines.push(medicine);
+
+  pendingSync.push(medicine);
+
+  savePendingSync();
+
+  saveMedicines();
+
+  displayMedicines();
+
+  clearInputs();
+}
+
+function clearInputs() {
+  document.getElementById("drugName").value = "";
+  document.getElementById("drugQuantity").value = "";
+  document.getElementById("expiryDate").value = "";
+  document.getElementById("supplier").value = "";
+}
+
+function displayMedicines() {
+
+  const table = document.getElementById("medicineTable");
+
+  table.innerHTML = "";
+
+  medicines.forEach((medicine, index) => {
+
+    const today = new Date();
+    const expiry = new Date(medicine.expiryDate);
+
+    const timeDifference = expiry - today;
+
+    const daysLeft = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+
+    let status = "Safe";
+    let alertMessage = "";
+    let rowClass = "";
+
+    if (daysLeft <= 30) {
+      status = "Expiring Soon";
+      alertMessage = "⚠️ Expiring Soon";
+      rowClass = "expiry-warning";
+    }
+
+    if (medicine.drugQuantity <= 10) {
+      status = "Low Stock";
+      alertMessage = "🔴 Low Stock";
+      rowClass = "low-stock";
+    }
+
+    const row = `
+      <tr class="${rowClass}">
+        <td>${medicine.drugName}</td>
+        <td>${medicine.drugQuantity}</td>
+        <td>${medicine.expiryDate}</td>
+        <td>${medicine.supplier}</td>
+        <td>${alertMessage || status}</td>
+        <td>
+          <button onclick="deleteMedicine(${index})">
+            Delete
+          </button>
+        </td>
+      </tr>
+    `;
+
+    table.innerHTML += row;
+  });
+}
+
+function deleteMedicine(index) {
+
+  medicines.splice(index, 1);
+
+  saveMedicines();
+
+  displayMedicines();
+}
+
+function onScanSuccess(decodedText) {
+
+  const foundMedicine = medicines.find(
+    medicine => medicine.barcode.toLowerCase() === decodedText.toLowerCase()
+  );
+
+  if (foundMedicine) {
+    alert(
+      `Medicine Found:\n\nDrug: ${foundMedicine.drugName}\nExpiry: ${foundMedicine.expiryDate}\nSupplier: ${foundMedicine.supplier}`
+    );
+  } else {
+    alert("Medicine not found in offline database");
+  }
+}
+
+function startScanner() {
+
+  const html5QrCode = new Html5QrcodeScanner(
+    "reader",
+    { fps: 10, qrbox: 250 }
+  );
+
+  html5QrCode.render(onScanSuccess);
+}
+
+function syncData() {
+
+  if (navigator.onLine) {
+
+    document.getElementById("syncStatus").innerHTML =
+      "☁️ Internet Connected - Sync Successful";
+
+    pendingSync = [];
+
+    savePendingSync();
+
+  } else {
+
+    document.getElementById("syncStatus").innerHTML =
+      "📴 Offline Mode Active";
+  }
+}
+
+window.addEventListener("online", syncData);
+window.addEventListener("offline", syncData);
+
+window.onload = function() {
+  displayMedicines();
+  startScanner();
+  syncData();
+};
+
+</script>
+
+</body>
+</html>

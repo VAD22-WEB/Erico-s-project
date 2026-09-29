@@ -1,0 +1,219 @@
+<!-- SAVE THIS AS index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kenya Health Information App</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: green;
+      color: white;
+      padding: 25px;
+      border-radius: 15px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .login-box {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      background: green;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: darkgreen;
+    }
+
+    .health-card {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .health-card h2 {
+      color: green;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .contacts {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      color: gray;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h1>Kenya Health Information App</h1>
+    <p>Helping Kenyans access health information easily</p>
+  </div>
+
+  <!-- LOGIN/SIGNUP -->
+  <div class="login-box" id="authBox">
+
+    <h2 id="formTitle">Login</h2>
+
+    <input type="text" id="name" placeholder="Full Name" class="hidden">
+
+    <input type="email" id="email" placeholder="Email">
+
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="submitForm()" id="submitBtn">
+      Login
+    </button>
+
+    <p id="toggleText">
+      Don't have an account?
+      <a href="#" onclick="toggleForm()">Sign Up</a>
+    </p>
+
+  </div>
+
+  <!-- HEALTH CONTENT -->
+  <div id="healthSection" class="hidden">
+
+    <div class="health-card">
+      <h2>Malaria</h2>
+      <p><strong>Symptoms:</strong> Fever, headache, chills</p>
+      <p><strong>Prevention:</strong> Sleep under mosquito nets</p>
+      <p><strong>Emergency:</strong> Visit nearest hospital immediately</p>
+    </div>
+
+    <div class="health-card">
+      <h2>Typhoid</h2>
+      <p><strong>Symptoms:</strong> Fever, stomach pain</p>
+      <p><strong>Prevention:</strong> Drink clean water</p>
+      <p><strong>Emergency:</strong> Seek medical attention quickly</p>
+    </div>
+
+    <div class="health-card">
+      <h2>Cholera</h2>
+      <p><strong>Symptoms:</strong> Severe diarrhea, dehydration</p>
+      <p><strong>Prevention:</strong> Proper sanitation and clean water</p>
+      <p><strong>Emergency:</strong> Go to hospital immediately</p>
+    </div>
+
+    <div class="contacts">
+      <h2>Emergency Contacts</h2>
+      <p>🚑 Ambulance: 999</p>
+      <p>🚓 Police: 112</p>
+      <p>🏥 Health Hotline: 719</p>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <p>Built using HTML, CSS and JavaScript</p>
+  </div>
+
+</div>
+
+<script>
+
+let isSignup = false;
+
+function toggleForm() {
+
+  isSignup = !isSignup;
+
+  const formTitle = document.getElementById("formTitle");
+  const submitBtn = document.getElementById("submitBtn");
+  const toggleText = document.getElementById("toggleText");
+  const nameField = document.getElementById("name");
+
+  if (isSignup) {
+    formTitle.innerHTML = "Sign Up";
+    submitBtn.innerHTML = "Create Account";
+    nameField.classList.remove("hidden");
+
+    toggleText.innerHTML =
+      'Already have an account? <a href="#" onclick="toggleForm()">Login</a>';
+
+  } else {
+
+    formTitle.innerHTML = "Login";
+    submitBtn.innerHTML = "Login";
+    nameField.classList.add("hidden");
+
+    toggleText.innerHTML =
+      'Don\\'t have an account? <a href="#" onclick="toggleForm()">Sign Up</a>';
+  }
+}
+
+function submitForm() {
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if (email === "" || password === "") {
+    alert("Please fill all fields");
+    return;
+  }
+
+  alert("Welcome to Kenya Health App!");
+
+  document.getElementById("authBox").classList.add("hidden");
+
+  document.getElementById("healthSection").classList.remove("hidden");
+}
+
+</script>
+
+</body>
+</html>
